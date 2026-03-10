@@ -1,9 +1,11 @@
+name: objectnav-zoo
 channels:
   - pytorch
   - pytorch3d
   - nvidia
   - conda-forge
   - pyg
+  - aihabitat
 dependencies:
   - python==3.9.*
   - cmake>=3.5
@@ -12,6 +14,8 @@ dependencies:
   - gxx=10.4.0
   - pytorch=1.13.1
   - pytorch-cuda=11.7
+  - withbullet
+  - habitat-sim==0.2.5
   - pytorch3d
   - torchvision
   - torchaudio
@@ -23,7 +27,11 @@ dependencies:
   - fzf # optional: fancy ctrl + R
   - pip
   - pip:
+    - gym>=0.22.0,<0.23.1
+    - yacs>=0.1.8
+    - attrs>=19.1.0
     - numpy <1.24 # certain deprecated operations were used in other deps
+    - numba <0.60
     - scipy
     - pybullet
     - trimesh<4
