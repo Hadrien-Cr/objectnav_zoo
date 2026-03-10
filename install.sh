@@ -4,12 +4,12 @@
 read -p "Press Enter to continue to Environment Setup" enter
 conda env create -n objectnav_zoo -f src/objectnav_zoo/environment.yml
 conda activate objectnav_zoo
-conda install cudatoolkit-dev=11.7
 
 export CUDA_HOME=$CONDA_PREFIX
 export ZOO_ROOT=$(pwd)
 export CC=$CONDA_PREFIX/bin/gcc
 export CXX=$CONDA_PREFIX/bin/g++
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
 
 ######################
 # Package install
@@ -18,7 +18,10 @@ read -p "Press Enter to continue to Package install" enter
 read 
 python -m pip install -e src/objectnav_zoo
 #submodules init
-git submodule update --init --recursive -f src/third_party/Detic src/third_party/contact_graspnet  src/third_party/habitat-lab src/third_party/MiDaS src/third_party/SuperGluePretrainedNetwork
+git submodule update --init --recursive -f src/third_party/Detic src/third_party/contact_graspnet 
+git submodule update --init --recursive src/third_party/habitat-lab 
+git submodule update --init --recursive src/third_party/MiDaS 
+git submodule update --init --recursive src/third_party/SuperGluePretrainedNetwork
 git submodule update --init --recursive src/third_party/habitat-lab
 pip install -e src/third_party/habitat-lab/habitat-lab -v
 pip install -e src/third_party/habitat-lab/habitat-baselines -v

@@ -25,8 +25,8 @@ install_requires = [
 ]
 
 setup(
-    name="home-robot",
-    version="0.1.0",
+    name="objectnav_zoo",
+    version="0.0.0",
     packages=find_packages(where="."),
     install_requires=install_requires,
     include_package_data=True,
