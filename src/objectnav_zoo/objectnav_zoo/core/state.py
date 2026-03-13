@@ -4,5 +4,11 @@
 # LICENSE file in the root directory of this source tree.
 
 
-from .heuristic_pick_policy import HeuristicPickPolicy
-from .heuristic_place_policy import HeuristicPlacePolicy
+from dataclasses import dataclass
+
+import sophus as sp
+
+
+@dataclass
+class ManipulatorBaseParams:
+    se3_base: sp.SE3

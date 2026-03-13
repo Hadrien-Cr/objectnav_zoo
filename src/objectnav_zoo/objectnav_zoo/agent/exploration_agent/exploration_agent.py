@@ -13,7 +13,7 @@ from torch.nn import DataParallel
 from objectnav_zoo.core.abstract_agent import Agent
 from objectnav_zoo.core.interfaces import DiscreteNavigationAction, Observations
 from objectnav_zoo.mapping.geometric.geometric_map_state import GeometricMapState
-from objectnav_zoo.navigation_planner.discrete_planner import DiscretePlanner
+from objectnav_zoo.navigation_planner.discrete_planner import DiscreteActionFMM
 
 from .exploration_agent_module import ExplorationAgentModule
 
@@ -59,7 +59,7 @@ class ExplorationAgent(Agent):
         agent_cell_radius = int(
             np.ceil(agent_radius_cm / config.AGENT.SEMANTIC_MAP.map_resolution)
         )
-        self.planner = DiscretePlanner(
+        self.planner = DiscreteActionFMM(
             turn_angle=config.ENVIRONMENT.turn_angle,
             collision_threshold=config.AGENT.PLANNER.collision_threshold,
             step_size=config.AGENT.PLANNER.step_size,

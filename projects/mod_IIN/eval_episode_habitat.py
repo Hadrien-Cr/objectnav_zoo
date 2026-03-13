@@ -41,7 +41,8 @@ if __name__ == "__main__":
     }
     print(metrics)
 
-    record_video(
-        target_dir=f"{config.dump_location}/videos/{config.exp_name}",
-        image_dir=f"{config.dump_location}/images/{config.exp_name}",
-    )
+    if config.generate_videos:
+        record_video(
+            target_dir=f"{config.dump_location}/videos/{config.exp_name}",
+            image_dir=f"{config.dump_location}/images/{config.exp_name}",
+        )

@@ -17,8 +17,7 @@ from torch import Tensor
 import objectnav_zoo.utils.pose as pu
 from objectnav_zoo.core.interfaces import Observations
 from objectnav_zoo.perception.detection.detic.detic_mask import Detic
-
-from .superglue import Matching
+from objectnav_zoo.perception.superglue.superglue import Matching
 
 
 class ObsPreprocessor:

@@ -69,15 +69,3 @@ data/***
 *.pth
 *.ply
 *.pt
-
-# Training stuff
-projects/**/wandb
-core
-projects/**/multirun/**/**
-projects/slap_manipulation/assets/**
-
-# configs
-projects/habitat_ovmm/configs/agent/generated/*
-
-# Emacs
-*~

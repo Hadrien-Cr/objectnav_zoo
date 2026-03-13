@@ -18,7 +18,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from objectnav_zoo.agent.imagenav_agent.SuperGluePretrainedNetwork.models.matching import (
+from objectnav_zoo.perception.superglue.SuperGluePretrainedNetwork.models.matching import (
     Matching as SGPMatching,
 )
 

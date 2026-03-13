@@ -16,6 +16,9 @@
 [submodule "src/objectnav_zoo/objectnav_zoo/perception/detection/grounded_sam/Grounded-Segment-Anything"]
 	path = src/objectnav_zoo/objectnav_zoo/perception/detection/grounded_sam/Grounded-Segment-Anything
 	url = https://github.com/IDEA-Research/Grounded-Segment-Anything.git
-[submodule "src/objectnav_zoo/objectnav_zoo/agent/imagenav_agent/SuperGluePretrainedNetwork"]
-	path = src/objectnav_zoo/objectnav_zoo/agent/imagenav_agent/SuperGluePretrainedNetwork
+[submodule "src/objectnav_zoo/objectnav_zoo/perception/superglue/SuperGluePretrainedNetwork"]
+	path = src/objectnav_zoo/objectnav_zoo/perception/superglue/SuperGluePretrainedNetwork
+	url = https://github.com/mukulkhanna/SuperGluePretrainedNetwork.git
+[submodule "src/objectnav_zoo/objectnav_zoo/detection/superglue/SuperGluePretrainedNetwork"]
+	path = src/objectnav_zoo/objectnav_zoo/detection/superglue/SuperGluePretrainedNetwork
 	url = https://github.com/mukulkhanna/SuperGluePretrainedNetwork.git

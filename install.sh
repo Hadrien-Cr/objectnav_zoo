@@ -24,7 +24,7 @@ git submodule update --init --recursive src/third_party/MiDaS
 git submodule update --init --recursive src/third_party/contact_graspnet 
 
 # submodules for depth estimation
-git submodule update --init --recursive src/objectnav_zoo/agent/imagenav_agent/SuperGluePretrainedNetwork
+git submodule update --init --recursive src/objectnav_zoo/objectnav_zoo/perception/superglue/SuperGluePretrainedNetwork
 # submodules for detection 
 git submodule update --init --recursive src/objectnav_zoo/objectnav_zoo/perception/detection/detic/Detic
 git submodule update --init --recursive src/objectnav_zoo/objectnav_zoo/perception/detection/grounded_sam/Grounded-Segment-Anything

@@ -36,7 +36,7 @@ def remove_boundary(mat: np.ndarray, value=1) -> np.ndarray:
     return mat[value:-value, value:-value]
 
 
-class DiscretePlanner:
+class DiscreteActionFMM:
     """
     This class translates planner inputs into a discrete low-level action
     using an FMM planner.

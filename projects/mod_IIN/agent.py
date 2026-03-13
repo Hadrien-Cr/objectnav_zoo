@@ -10,13 +10,13 @@ import numpy as np
 import scipy
 import torch
 import torch.nn as nn
+from obs_preprocessor import ObsPreprocessor
 from omegaconf import DictConfig
 from sklearn.cluster import DBSCAN
 
 from objectnav_zoo.agent.imagenav_agent.frontier_exploration import (
     FrontierExplorationPolicy,
 )
-from objectnav_zoo.agent.imagenav_agent.obs_preprocessor import ObsPreprocessor
 from objectnav_zoo.agent.imagenav_agent.visualizer import NavVisualizer
 from objectnav_zoo.core.abstract_agent import Agent
 from objectnav_zoo.core.interfaces import DiscreteNavigationAction, Observations
@@ -26,7 +26,7 @@ from objectnav_zoo.mapping.semantic.categorical_2d_semantic_map_module import (
 from objectnav_zoo.mapping.semantic.categorical_2d_semantic_map_state import (
     Categorical2DSemanticMapState,
 )
-from objectnav_zoo.navigation_planner.discrete_planner import DiscretePlanner
+from objectnav_zoo.navigation_planner.discrete_planner import DiscreteActionFMM
 
 
 class IINAgentModule(nn.Module):
@@ -263,7 +263,7 @@ class ModIINAgent(Agent):
         agent_cell_radius = int(
             np.ceil(agent_radius_cm / config.semantic_map.map_resolution)
         )
-        self.planner = DiscretePlanner(
+        self.planner = DiscreteActionFMM(
             turn_angle=config.habitat.simulator.turn_angle,
             collision_threshold=config.planner.collision_threshold,
             step_size=config.planner.step_size,

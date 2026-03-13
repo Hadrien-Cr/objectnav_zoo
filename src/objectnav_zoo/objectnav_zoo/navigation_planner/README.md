@@ -3,10 +3,10 @@
 ### Discrete Action Planner Usage
 
 ```
-from objectnav_zoo.agent.navigation_planner.discrete_planner import DiscretePlanner
+from objectnav_zoo.agent.navigation_planner.discrete_planner import DiscreteActionFMM
 
 # See discrete_planner.py for argument info
-discrete_planner = DiscretePlanner(
+discrete_planner = DiscreteActionFMM(
     turn_angle=30.0,
     collision_threshold=0.20,
     obs_dilation_selem_radius=3,
