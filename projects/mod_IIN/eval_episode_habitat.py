@@ -5,10 +5,10 @@
 
 
 import habitat_extensions  # noqa
+from agent import ModIINAgent
 from config_utils import get_config
 from habitat.core.env import Env
 
-from objectnav_zoo.agent.imagenav_agent.imagenav_agent import ImageNavAgent
 from objectnav_zoo.agent.imagenav_agent.visualizer import record_video
 from objectnav_zoo.env.habitat_imagenav_env.habitat_imagenav_env import (
     HabitatImageNavEnv,
@@ -16,12 +16,12 @@ from objectnav_zoo.env.habitat_imagenav_env.habitat_imagenav_env import (
 
 if __name__ == "__main__":
     config, config_str = get_config(
-        "projects/instanceimagenav/configs/instance_imagenav_hm3d.yaml"
+        "projects/mod_IIN/configs/instance_imagenav_hm3d.yaml"
     )
     print("Config:\n", config_str, "\n", "-" * 100)
 
     env = HabitatImageNavEnv(Env(config=config.habitat), config=config)
-    agent = ImageNavAgent(config=config)
+    agent = ModIINAgent(config=config)
 
     env.reset()
     agent.reset()

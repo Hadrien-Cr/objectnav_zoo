@@ -245,10 +245,11 @@ class NavVisualizer:
             metrics,
         )
 
-        max_depth = 25.0
-        depth_frame_int8 = ((max_depth - depth_frame) / max_depth * 255).astype(
-            np.uint8
-        )
+        max_depth_user = 5
+        depth_frame[depth_frame > max_depth_user] = max_depth_user
+        depth_frame_int8 = (
+            (max_depth_user - depth_frame) / max_depth_user * 255
+        ).astype(np.uint8)
         obs_depth_frame = self.make_observations_depth(
             depth_frame_int8,
             metrics,
@@ -610,7 +611,9 @@ class NavVisualizer:
         text_bar_height = 50 - border_size
         new_h = self.ind_frame_height - text_bar_height - 2 * border_size
 
-        td_map = maps.colorize_draw_agent_and_fit_to_height(top_down_map, new_h)
+        td_map = {k: [v] if "agent" in k else v for (k, v) in top_down_map.items()}
+
+        td_map = maps.colorize_draw_agent_and_fit_to_height(td_map, new_h)
         td_map = cv2.cvtColor(td_map, cv2.COLOR_RGB2BGR)
 
         # add map outline

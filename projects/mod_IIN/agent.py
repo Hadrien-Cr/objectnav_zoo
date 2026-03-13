@@ -13,6 +13,11 @@ import torch.nn as nn
 from omegaconf import DictConfig
 from sklearn.cluster import DBSCAN
 
+from objectnav_zoo.agent.imagenav_agent.frontier_exploration import (
+    FrontierExplorationPolicy,
+)
+from objectnav_zoo.agent.imagenav_agent.obs_preprocessor import ObsPreprocessor
+from objectnav_zoo.agent.imagenav_agent.visualizer import NavVisualizer
 from objectnav_zoo.core.abstract_agent import Agent
 from objectnav_zoo.core.interfaces import DiscreteNavigationAction, Observations
 from objectnav_zoo.mapping.semantic.categorical_2d_semantic_map_module import (
@@ -22,10 +27,6 @@ from objectnav_zoo.mapping.semantic.categorical_2d_semantic_map_state import (
     Categorical2DSemanticMapState,
 )
 from objectnav_zoo.navigation_planner.discrete_planner import DiscretePlanner
-
-from .frontier_exploration import FrontierExplorationPolicy
-from .obs_preprocessor import ObsPreprocessor
-from .visualizer import NavVisualizer
 
 
 class IINAgentModule(nn.Module):
@@ -213,6 +214,7 @@ class IINAgentModule(nn.Module):
         seq_goal_map, seq_found_goal = self.superglue(
             seq_goal_map, seq_found_goal, final_local_map, matches, confidence
         )
+
         seq_goal_map = seq_goal_map.view(
             batch_size, sequence_length, *seq_goal_map.shape[-2:]
         )
@@ -234,7 +236,7 @@ class IINAgentModule(nn.Module):
         )
 
 
-class ImageNavAgent(Agent):
+class ModIINAgent(Agent):
     """Class for a modular agent that navigates to objects specified by images."""
 
     def __init__(self, config: DictConfig, device_id: int = 0) -> None:
@@ -350,13 +352,14 @@ class ImageNavAgent(Agent):
             info = {
                 **planner_inputs[0],
                 **vis_inputs[0],
-                "rgb_frame": obs.rgb,
-                "depth_frame": obs.depth,
+                "rgb_frame": obs.rgb.copy(),
+                "depth_frame": obs.depth.copy(),
                 "closest_goal_map": closest_goal_map,
                 "last_goal_image": obs.task_observations["instance_imagegoal"],
                 "last_collisions": collision,
                 "last_td_map": obs.task_observations.get("top_down_map"),
             }
+            print(any(planner_inputs))
             self.visualizer.visualize(**info)
 
         return action

@@ -72,6 +72,7 @@ class ExplorationAgent(Agent):
             dump_location=config.DUMP_LOCATION,
             exp_name=config.EXP_NAME,
             agent_cell_radius=agent_cell_radius,
+            min_goal_distance_cm=config.AGENT.PLANNER.min_goal_distance_cm,
         )
 
         self.goal_update_steps = self._module.goal_update_steps

@@ -27,8 +27,9 @@ rm -r instance_imagenav_hm3d_v3 instance_imagenav_hm3d_v3.zip
 Use the invocation python download_mp.py --task_data gibson -o . with the received script to download the data (39.09GB). Matterport3D webpage: link.
 
 ## Roadmap
-
-- [x] Integrate [Mod-IIN](https://github.com/facebookresearch/home-robot/tree/main/projects/instanceimagenav)
+- [ ] Cross-Dataset Evaluation 
+- [ ] Automatic Tuning 
+- [x] Integrate [Mod-IIN](https://github.com/facebookresearch/home-robot/tree/main/projects/mod_IIN)
 - [ ] Integrate [SemExp](https://github.com/devendrachaplot/Object-Goal-Navigation)
 - [ ] Integrate [3DAwareNav](https://github.com/jzhzhang/3DAwareNav)
 - [ ] Integrate [Modular GOAT - Modular CoW](https://theophilegervet.github.io/projects/goat/)

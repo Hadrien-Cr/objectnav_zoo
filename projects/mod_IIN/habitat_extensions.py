@@ -111,49 +111,51 @@ class MyTopDownMap(Measure):
     def _draw_goals_aabb(self, episode):
         if self._config.draw_goal_aabbs:
             for goal in episode.goals:
-                try:
-                    sem_scene = self._sim.semantic_scene.objects
-                    object_id = goal.object_id
-                    assert int(sem_scene.objects[object_id].id.split("_")[-1]) == int(
-                        goal.object_id
-                    ), f"Object_id doesn't correspond to id in semantic scene objects dictionary for episode: {episode}"
+                sem_scene = self._sim.semantic_scene
 
-                    center = sem_scene.objects[object_id].aabb.center
-                    x_len, _, z_len = sem_scene.objects[object_id].aabb.sizes / 2.0
-                    # Nodes to draw rectangle
-                    corners = [
-                        center + np.array([x, 0, z])
-                        for x, z in [
-                            (-x_len, -z_len),
-                            (-x_len, z_len),
-                            (x_len, z_len),
-                            (x_len, -z_len),
-                            (-x_len, -z_len),
-                        ]
-                        if self._is_on_same_floor(center[1])
+                if not sem_scene.objects:
+                    print("Warning: No semantic objects found in the scene.")
+                    continue
+
+                object_id = goal.object_id
+                assert int(sem_scene.objects[object_id].id.split("_")[-1]) == int(
+                    goal.object_id
+                ), f"Object_id doesn't correspond to id in semantic scene objects dictionary for episode: {episode}"
+
+                center = sem_scene.objects[object_id].aabb.center
+                x_len, _, z_len = sem_scene.objects[object_id].aabb.sizes / 2.0
+                # Nodes to draw rectangle
+                corners = [
+                    center + np.array([x, 0, z])
+                    for x, z in [
+                        (-x_len, -z_len),
+                        (-x_len, z_len),
+                        (x_len, z_len),
+                        (x_len, -z_len),
+                        (-x_len, -z_len),
                     ]
+                    if self._is_on_same_floor(center[1])
+                ]
 
-                    map_corners = [
-                        maps.to_grid(
-                            p[2],
-                            p[0],
-                            (
-                                self._top_down_map.shape[0],
-                                self._top_down_map.shape[1],
-                            ),
-                            sim=self._sim,
-                        )
-                        for p in corners
-                    ]
-
-                    maps.draw_path(
-                        self._top_down_map,
-                        map_corners,
-                        maps.MAP_TARGET_BOUNDING_BOX,
-                        self.line_thickness,
+                map_corners = [
+                    maps.to_grid(
+                        p[2],
+                        p[0],
+                        (
+                            self._top_down_map.shape[0],
+                            self._top_down_map.shape[1],
+                        ),
+                        sim=self._sim,
                     )
-                except AttributeError:
-                    pass
+                    for p in corners
+                ]
+
+                maps.draw_path(
+                    self._top_down_map,
+                    map_corners,
+                    maps.MAP_TARGET_BOUNDING_BOX,
+                    self.line_thickness,
+                )
 
     def _draw_shortest_path(
         self, episode: NavigationEpisode, agent_position: AgentState
