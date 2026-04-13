@@ -3,7 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-
+import os
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -17,20 +17,26 @@ from detectron2.engine.defaults import DefaultPredictor
 from detectron2.utils.visualizer import ColorMode, VisImage, Visualizer
 from omegaconf import DictConfig
 
+ZOO_ROOT = os.environ["ZOO_ROOT"]
+DETIC_ROOT = str(Path(ZOO_ROOT) / "third_party/Detic/")
+
 sys.path.insert(
-    0, str(Path(__file__).resolve().parent / "Detic/third_party/CenterNet2/")
+    0, ZOO_ROOT
 )
-print(sys.path)
+sys.path.insert(
+    0, str(Path(DETIC_ROOT) / "third_party/CenterNet2/")
+)
+
 
 from centernet.config import add_centernet_config  # noqa:E402
 
-from objectnav_zoo.perception.detection.detic.Detic.detic.config import (  # noqa:E402
+from third_party.Detic.detic.config import (  # noqa:E402
     add_detic_config,
 )
-from objectnav_zoo.perception.detection.detic.Detic.detic.modeling.text.text_encoder import (  # noqa:E402
+from third_party.Detic.detic.modeling.text.text_encoder import (  # noqa:E402
     build_text_encoder,
 )
-from objectnav_zoo.perception.detection.detic.Detic.detic.modeling.utils import (  # noqa:E402
+from third_party.Detic.detic.modeling.utils import (  # noqa:E402
     reset_cls_test,
 )
 
@@ -79,13 +85,14 @@ class Detic:
 
     @staticmethod
     def setup_cfg(config: DictConfig) -> CfgNode:
-        config_file = str(Path(__file__).resolve().parent / config.config_file)
-        weights = str(Path(__file__).resolve().parent / config.weights)
+        config_file = str(Path(DETIC_ROOT).resolve().parent / config.config_file)
+        weights = str(Path(DETIC_ROOT).resolve().parent / config.weights)
 
         cfg = get_cfg()
         add_centernet_config(cfg)
         add_detic_config(cfg)
         cfg.merge_from_file(config_file)
+
         cfg.MODEL.WEIGHTS = weights
         cfg.MODEL.RETINANET.SCORE_THRESH_TEST = config.confidence_threshold
         cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = config.confidence_threshold
@@ -94,8 +101,7 @@ class Detic:
         )
         cfg.MODEL.ROI_BOX_HEAD.ZEROSHOT_WEIGHT_PATH = "rand"
         cfg.MODEL.ROI_BOX_HEAD.CAT_FREQ_PATH = str(
-            Path(__file__).resolve().parent
-            / "Detic"
+            Path(DETIC_ROOT)
             / cfg.MODEL.ROI_BOX_HEAD.CAT_FREQ_PATH
         )
         cfg.MODEL.ROI_HEADS.ONE_CLASS_PER_PROPOSAL = True
