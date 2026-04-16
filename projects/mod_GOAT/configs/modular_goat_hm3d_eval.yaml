@@ -4,7 +4,7 @@ DUMP_LOCATION: datadump   # path to dump models and log
 EXP_NAME: openvocab_v0.1.1_gt_semantics_600    # experiment name
 VISUALIZE: 0              # 1: render observation and predicted semantic map, 0: no visualization
 PRINT_IMAGES: 1           # 1: save visualization as images, 0: no image saving
-GROUND_TRUTH_SEMANTICS: 1 # 1: use ground-truth semantics (for debugging / ablations)
+GROUND_TRUTH_SEMANTICS: 0 # 1: use ground-truth semantics (for debugging / ablations)
 seed: 1
 SHOW_RL_OBS: False         # whether to show the observations passed to RL policices, for debugging
 
@@ -50,7 +50,6 @@ AGENT:
 
     depth_filtering: True
     depth_filter_range_cm: 100        # 1m about the depth median (+/- 50cm)
-    preprojection_kp_dilation: 15 
     goal_filtering: True
 
     record_instance_ids: True  # whether to predict and store instance ids in the map

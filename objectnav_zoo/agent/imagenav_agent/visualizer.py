@@ -173,6 +173,8 @@ class NavVisualizer:
         self.last_xy = None
         self.ind_frame_height = 450
 
+        self.k = 0
+
     def reset(self) -> None:
         self.vis_dir = self.default_vis_dir
         self.image_vis = None
@@ -192,13 +194,13 @@ class NavVisualizer:
         sensor_pose: np.ndarray,
         found_goal: bool,
         explored_map: np.ndarray,
-        semantic_frame: np.ndarray,
         rgb_frame: np.ndarray,
         depth_frame: np.ndarray,
         timestep: int,
         last_goal_image,
         last_td_map: Dict[str, Any] = None,
         last_collisions: Dict[str, Any] = None,
+        semantic_frame: Optional[np.ndarray] = None,
         semantic_map: Optional[np.ndarray] = None,
         visualize_goal: bool = True,
         metrics: Dict[str, Any] = None,
@@ -238,7 +240,6 @@ class NavVisualizer:
         if dilated_obstacle_map is not None:
             obstacle_map = dilated_obstacle_map
 
-        semantic_frame = np.resize(semantic_frame, rgb_frame.shape).astype(np.uint8)
         goal_frame = self.make_goal(last_goal_image)
         obs_rgb_frame = self.make_observations_rgb(
             rgb_frame,
@@ -246,8 +247,15 @@ class NavVisualizer:
             found_goal,
             metrics,
         )
-        obs_semantic_frame = self.make_observations_sem(semantic_frame)
         obs_depth_frame = self.make_observations_depth(depth_frame)
+        upper_frame = [goal_frame, obs_rgb_frame, obs_depth_frame]
+
+        if semantic_frame is not None:
+            obs_semantic_frame = self.make_observations_sem(semantic_frame)
+            upper_frame.append(obs_semantic_frame)
+
+        upper_frame = np.concatenate(upper_frame, axis = 1)
+
         map_pred_frame = self.make_map_preds(
             sensor_pose,
             obstacle_map,
@@ -257,30 +265,22 @@ class NavVisualizer:
             goal_map,
             visualize_goal,
         )
-        td_map_frame = None if last_td_map is None else self.make_td_map(last_td_map)
 
-        kp_frame = np.ones_like(goal_frame) * 255
-        # kp_frame = self.make_keypoint(timestep)
-
-        if td_map_frame is None:
-            frame = np.concatenate(
-                [goal_frame, obs_rgb_frame, obs_semantic_frame, obs_depth_frame, map_pred_frame, kp_frame],
-                axis=1,
-            )
+        if last_td_map:
+            td_map_frame = self.make_td_map(last_td_map)
+            lower_frame = [map_pred_frame, td_map_frame]
         else:
-            upper_frame = np.concatenate(
-                [goal_frame, obs_rgb_frame, obs_semantic_frame, obs_depth_frame, kp_frame], axis=1
-            )
-            lower_frame = self.pad_frame(
-                np.concatenate([map_pred_frame, td_map_frame], axis=1),
-                upper_frame.shape[1],
-            )
-            frame = np.concatenate([upper_frame, lower_frame], axis=0)
+            lower_frame = [map_pred_frame]
 
-        nframes = 1 if metrics is None else 5
-        for i in range(nframes):
-            name = f"snapshot_{timestep}_{i}.png"
-            cv2.imwrite(os.path.join(self.vis_dir, name), frame)
+        lower_frame = self.pad_frame(
+            np.concatenate(lower_frame, axis=1),
+            upper_frame.shape[1],
+        )
+
+        out_frame = np.concatenate([upper_frame, lower_frame], axis=0)
+
+        name = f"snapshot_{timestep}.png"
+        cv2.imwrite(os.path.join(self.vis_dir, name), out_frame)
 
     def pad_frame(self, frame: np.ndarray, width: int) -> np.ndarray:
         """Pad the width of a frame to `width` centered white sides."""
@@ -466,19 +466,34 @@ class NavVisualizer:
         """
         make the egocentric depth observation sub-frame.
         """
-        max_depth_user = 5
-        depth_img[depth_img > max_depth_user] = max_depth_user
-        depth_img = (
-            (max_depth_user - depth_img) / max_depth_user * 255
-        ).astype(np.uint8)
+        from objectnav_zoo.utils.constants import (
+            MAX_DEPTH_REPLACEMENT_VALUE,
+            MIN_DEPTH_REPLACEMENT_VALUE,
+        )
+        w,h = depth_img.shape
+        max_depth_user = 5.0
+        min_depth_user = 0.2
+        depth_img[depth_img==MAX_DEPTH_REPLACEMENT_VALUE] = max_depth_user
+        depth_img[depth_img==MIN_DEPTH_REPLACEMENT_VALUE] = min_depth_user
+        assert np.min(depth_img) >= min_depth_user and np.max(depth_img) <= max_depth_user
 
+        depth_img = (1 - ((depth_img - min_depth_user) / (max_depth_user - min_depth_user)))
+        assert np.all(depth_img >= 0) and np.all(depth_img <= 1)        
+        depth_img = (depth_img* 255).astype(np.uint8)
+        depth_img = cv2.cvtColor(depth_img, cv2.COLOR_RGB2BGR)
+
+        for x in np.linspace(0,w,8)[1:-1]:
+            for y in np.linspace(0,h,8)[1:-1]:
+                value = min_depth_user + (1 - depth_img[round(x), round(y)][0] / 255) * (max_depth_user - min_depth_user)
+                cv2.putText(depth_img, f"{value:.2f}m", (round(y) - 8, round(x)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+    
         border_size = 10
         text_bar_height = 50 - border_size
         new_h = self.ind_frame_height - text_bar_height - 2 * border_size
-        new_w = int(new_h / depth_img.shape[0] * depth_img.shape[1])
+        new_w = int(new_h / w * h)
         depth_img = cv2.resize(depth_img, (new_w, new_h))
 
-        depth_img = cv2.cvtColor(depth_img, cv2.COLOR_RGB2BGR)
         depth_img = self._add_border(depth_img, border_size)
         w = depth_img.shape[1]
 

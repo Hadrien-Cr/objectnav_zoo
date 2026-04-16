@@ -1,12 +1,14 @@
 ```
 export PYTHONNOUSERSITE=1
+export ZOO_ROOT=$(pwd)
+
 export HABITAT_DATA=<path/to/habitat/data>
 conda env create -n objectnav_zoo -f environment.yml
 
 ln -s $HABITAT_DATA . # create a symlink from the data folder to the root
 
 export CUDA_HOME=$CONDA_PREFIX
-export ZOO_ROOT=$(pwd)
+
 ```
 
 ```

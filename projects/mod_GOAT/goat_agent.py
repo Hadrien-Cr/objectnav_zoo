@@ -30,8 +30,7 @@ from objectnav_zoo.core.interfaces import DiscreteNavigationAction, Observations
 from objectnav_zoo.mapping.semantic.categorical_2d_semantic_map_state import (
     Categorical2DSemanticMapState,
 )
-from objectnav_zoo.navigation_planner.discrete_planner import DiscreteActionFMM
-from objectnav_zoo.mapping.semantic.constants import MapConstants as MC
+from objectnav_zoo.navigation_planner.discrete_planner import DiscretePlanner
 from objectnav_zoo.mapping.semantic.instance_tracking_modules import InstanceMemory
 
 from objectnav_zoo.mapping.semantic.categorical_2d_semantic_map_module import (
@@ -64,7 +63,9 @@ class GoatAgentModule(nn.Module):
         self.semantic_map_module = Categorical2DSemanticMapModule(
             frame_height=config.ENVIRONMENT.frame_height,
             frame_width=config.ENVIRONMENT.frame_width,
-            camera_height=config.ENVIRONMENT.camera_height,
+            camera_height=config.habitat.simulator.agents.main_agent.sim_sensors.rgb_sensor.position[
+                1
+            ],            
             hfov=config.ENVIRONMENT.hfov,
             num_sem_categories=config.AGENT.SEMANTIC_MAP.num_sem_categories,
             map_size_cm=config.AGENT.SEMANTIC_MAP.map_size_cm,
@@ -401,7 +402,7 @@ class GoatAgent(Agent):
         )
         self.max_num_sub_task_episodes = config.ENVIRONMENT.max_num_sub_task_episodes
 
-        self.planner = DiscreteActionFMM(
+        self.planner = DiscretePlanner(
             turn_angle=config.ENVIRONMENT.turn_angle,
             collision_threshold=config.AGENT.PLANNER.collision_threshold,
             step_size=config.AGENT.PLANNER.step_size,
@@ -803,7 +804,6 @@ class GoatAgent(Agent):
             #     pass
 
         if self.visualize:
-            vis_inputs[0]["dilated_obstacle_map"] = dilated_obstacle_map
             if task_type == "imagenav":
                 collision = {"is_collision": False}
                 info = {
@@ -811,7 +811,7 @@ class GoatAgent(Agent):
                     **vis_inputs[0],
                     "rgb_frame": obs.rgb,
                     "depth_frame": obs.depth,
-                    "semantic_frame": obs.semantic,
+                    "semantic_frame": obs.task_observations["semantic_frame"],
                     "closest_goal_map": closest_goal_map,
                     "last_goal_image": obs.task_observations["tasks"][
                         self.current_task_idx

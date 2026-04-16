@@ -3,7 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-
+import os
 import argparse
 import pathlib
 import sys
@@ -22,30 +22,33 @@ from objectnav_zoo.core.abstract_perception import PerceptionModule
 from objectnav_zoo.core.interfaces import Observations
 from objectnav_zoo.perception.detection.utils import filter_depth, overlay_masks
 
+ZOO_ROOT = os.environ["ZOO_ROOT"]
+DETIC_ROOT = str(Path(ZOO_ROOT) / "third_party/Detic/")
+
 sys.path.insert(
-    0, str(Path(__file__).resolve().parent / "Detic/third_party/CenterNet2/")
+    0, ZOO_ROOT
 )
+sys.path.insert(
+    0, str(Path(DETIC_ROOT) / "third_party/CenterNet2/")
+)
+
 from centernet.config import add_centernet_config  # noqa: E402
 
-from objectnav_zoo.perception.detection.detic.Detic.detic.config import (  # noqa: E402
+from third_party.Detic.detic.config import (  # noqa: E402
     add_detic_config,
 )
-from objectnav_zoo.perception.detection.detic.Detic.detic.modeling.text.text_encoder import (  # noqa: E402
+from third_party.Detic.detic.modeling.text.text_encoder import (  # noqa: E402
     build_text_encoder,
 )
-from objectnav_zoo.perception.detection.detic.Detic.detic.modeling.utils import (  # noqa: E402
+from third_party.Detic.detic.modeling.utils import (  # noqa: E402
     reset_cls_test,
 )
 
 BUILDIN_CLASSIFIER = {
-    "lvis": Path(__file__).resolve().parent
-    / "Detic/datasets/metadata/lvis_v1_clip_a+cname.npy",
-    "objects365": Path(__file__).resolve().parent
-    / "Detic/datasets/metadata/o365_clip_a+cnamefix.npy",
-    "openimages": Path(__file__).resolve().parent
-    / "Detic/datasets/metadata/oid_clip_a+cname.npy",
-    "coco": Path(__file__).resolve().parent
-    / "Detic/datasets/metadata/coco_clip_a+cname.npy",
+    "lvis": Path(DETIC_ROOT).resolve().parent / "Detic/datasets/metadata/lvis_v1_clip_a+cname.npy",
+    "objects365": Path(DETIC_ROOT).resolve().parent / "Detic/datasets/metadata/o365_clip_a+cnamefix.npy",
+    "openimages": Path(DETIC_ROOT).resolve().parent / "Detic/datasets/metadata/oid_clip_a+cname.npy",
+    "coco": Path(DETIC_ROOT).resolve().parent / "Detic/datasets/metadata/coco_clip_a+cname.npy",
 }
 
 BUILDIN_METADATA_PATH = {
@@ -90,12 +93,12 @@ class DeticPerception(PerceptionModule):
         self.verbose = verbose
         if config_file is None:
             config_file = str(
-                Path(__file__).resolve().parent
+                Path(DETIC_ROOT).resolve().parent
                 / "Detic/configs/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.yaml"
             )
         if checkpoint_file is None:
             checkpoint_file = str(
-                Path(__file__).resolve().parent
+                Path(DETIC_ROOT).resolve().parent
                 / "Detic/models/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth"
             )
         if self.verbose:
@@ -282,7 +285,7 @@ def setup_cfg(
         cfg.MODEL.ROI_HEADS.ONE_CLASS_PER_PROPOSAL = True
     # Fix cfg paths given we're not running from the Detic folder
     cfg.MODEL.ROI_BOX_HEAD.CAT_FREQ_PATH = str(
-        Path(__file__).resolve().parent / "Detic" / cfg.MODEL.ROI_BOX_HEAD.CAT_FREQ_PATH
+        Path(DETIC_ROOT) / cfg.MODEL.ROI_BOX_HEAD.CAT_FREQ_PATH
     )
     cfg.freeze()
     return cfg

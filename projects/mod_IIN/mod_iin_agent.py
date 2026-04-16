@@ -337,10 +337,13 @@ class ModIINAgent(Agent):
         )
 
         closest_goal_map = None
-        if self.timesteps[0] >= (self.max_steps - 1):
+
+        if self.timesteps[0] < int(360 / self.planner.turn_angle):
+            action = DiscreteNavigationAction.TURN_LEFT
+        elif self.timesteps[0] >= (self.max_steps - 1):
             action = DiscreteNavigationAction.STOP
         else:
-            action, closest_goal_map, _, _ = self.planner.plan(
+            action,closest_goal_map,short_term_goal,dilated_obstacle_map,could_not_find_path,planner_stop = self.planner.plan(
                 **planner_inputs[0],
                 use_dilation_for_stg=self.use_dilation_for_stg,
                 debug=self.verbose,

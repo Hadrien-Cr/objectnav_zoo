@@ -127,18 +127,9 @@ class HabitatGoatEnv(HabitatEnv):
         )
 
     def init_perception_module(self, vocabulary=None):
-        from home_robot.perception.detection.detic.detic_perception import (
+        from objectnav_zoo.perception.detection.detic.detic_perception import (
             DeticPerception,
         )
-        
-        all_ovon_categories_path = "/srv/flash1/rramrakhya3/fall_2023/goat/data/hm3d_meta/ovon_categories_final_split.json"
-        with open(all_ovon_categories_path, "r") as f:
-            all_ovon_categories = json.load(f)
-
-        # all_ovon_categories = [y for x in all_ovon_categories.values() for y in x if type(y) == str]
-        all_ovon_categories = sorted(list(set(all_ovon_categories["val_seen"])))
-
-        all_ovon_categories = ["_".join(x.split(" ")) for x in all_ovon_categories]
 
         self.segmentation = DeticPerception(
             vocabulary="custom",
@@ -151,7 +142,7 @@ class HabitatGoatEnv(HabitatEnv):
         #     sem_gpu_id=(-1 if self.config.NO_GPU else self.habitat_env.sim.gpu_device),
         # )
 
-        # from home_robot.perception.detection.grounded_sam.ram_perception import RAMPerception
+        # from objectnav_zoo.perception.detection.grounded_sam.ram_perception import RAMPerception
 
         # self.segmentation = RAMPerception(
         #     custom_vocabulary=".",
@@ -198,7 +189,7 @@ class HabitatGoatEnv(HabitatEnv):
             },
             camera_pose=camera_pose,
         )
-        obs = self._preprocess_semantic(obs, habitat_obs["semantic"])
+        obs = self._preprocess_semantic(obs, habitat_obs["rgb"])
         return obs
 
     def _preprocess_semantic(
@@ -208,51 +199,9 @@ class HabitatGoatEnv(HabitatEnv):
         vocabulary=None,
     ) -> objectnav_zoo.core.interfaces.Observations:
         if self.ground_truth_semantics:
-
-            obs.semantic = np.vectorize(lambda x: self.hm3d_mapping.get(x, 0))(habitat_semantic)[..., 0]
-            obs.task_observations["instance_map"] = habitat_semantic[:, :, -1] + 1
-
-            # import pdb;pdb.set_trace()
-            # instance_id_to_category_id = (
-            #     self.semantic_category_mapping.instance_id_to_category_id
-            # )
-            # obs.semantic = instance_id_to_category_id[habitat_semantic[:, :, -1]]
-            # obs.task_observations["instance_map"] = habitat_semantic[:, :, -1] + 1
-
-            # for idx_cat, obj_cat in enumerate(vocabulary):
-            #     obj_cat = " ".join(obj_cat.split("_"))
-            #     try:
-            #         if obj_cat in self.semantic_category_mapping.all_hm3d_categories:
-            #             idx = self.semantic_category_mapping.all_hm3d_categories.index(
-            #                 obj_cat
-            #             )
-            #             obs.semantic[obs.semantic == idx] = -1 * (idx_cat + 1)
-            #         else:
-
-            #             all_categories = [x for x in self.semantic_category_mapping.all_hm3d_categories if type(x) == str]
-            #             useful_categories = [x for x in all_categories if x in obj_cat or obj_cat in x]
-            #             # print(obj_cat, useful_categories)
-            #             for cat in useful_categories:
-            #                 idx = self.semantic_category_mapping.all_hm3d_categories.index(cat)
-            #                 obs.semantic[obs.semantic == idx] = -1 * (idx_cat + 1)
-            #             # print("Object category not found:", obj_cat)
-            #             # import pdb;pdb.set_trace()
-            #     except Exception as e:
-            #         print(e)
-            #         import pdb
-
-            #         pdb.set_trace()
-
-            # obs.semantic[obs.semantic >= 0] = 0
-            # obs.semantic = obs.semantic * -1
-            # TODO Ground-truth semantic visualization
-            obs.task_observations["semantic_frame"] = obs.rgb
+            raise NotImplementedError
         else:
             obs = self.segmentation.predict(obs)
-
-        obs.task_observations["semantic_frame"] = np.concatenate(
-            [obs.rgb, obs.semantic[:, :, np.newaxis]], axis=2
-        ).astype(np.uint8)
         return obs
 
     def _preprocess_depth(self, depth: np.array) -> np.array:

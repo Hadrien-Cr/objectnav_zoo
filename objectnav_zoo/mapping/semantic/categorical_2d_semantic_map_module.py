@@ -21,7 +21,7 @@ import objectnav_zoo.utils.depth as du
 import objectnav_zoo.utils.pose as pu
 import objectnav_zoo.utils.rotation as ru
 from objectnav_zoo.mapping.semantic.constants import MapConstants as MC
-from objectnav_zoo.mapping.semantic.instance_tracking_modules import InstanceMemory
+from objectnav_zoo.mapping.instance import InstanceMemory
 from objectnav_zoo.utils.spot import draw_circle_segment, fill_convex_hull
 
 # For debugging input and output maps - shows matplotlib visuals
@@ -39,9 +39,6 @@ class Categorical2DSemanticMapModule(nn.Module):
     https://arxiv.org/pdf/2007.00643.pdf
     https://github.com/devendrachaplot/Object-Goal-Navigation
     """
-
-    # If true, display point cloud visualizations using Open3d
-    debug_mode = False
 
     def __init__(
         self,
@@ -140,7 +137,7 @@ class Categorical2DSemanticMapModule(nn.Module):
 
         self.max_depth = max_depth * 100.0
         self.min_depth = min_depth * 100.0
-        self.agent_height = camera_height * 100.0
+        self.camera_height = camera_height * 100
         self.max_voxel_height = int(360 / self.z_resolution)
         self.min_voxel_height = int(-40 / self.z_resolution)
         self.min_obs_height_cm = min_obs_height_cm
@@ -152,7 +149,7 @@ class Categorical2DSemanticMapModule(nn.Module):
         # self.old_y = None
 
         self.max_mapped_height = int(
-            (self.agent_height + 1) / self.z_resolution - self.min_voxel_height
+            (self.camera_height + 1) / self.z_resolution - self.min_voxel_height
         )
         self.shift_loc = [self.vision_range * self.xy_resolution // 2, 0, np.pi / 2.0]
 
@@ -286,6 +283,7 @@ class Categorical2DSemanticMapModule(nn.Module):
                 else None,
                 seq_free_locations[:, t] if seq_free_locations is not None else None,
                 blacklist_target,
+                debug=True
             )
             for e in range(batch_size):
                 if seq_update_global[e, t]:
@@ -470,28 +468,20 @@ class Categorical2DSemanticMapModule(nn.Module):
                 [tra.euler_from_matrix(p[:3, :3].cpu(), "rzyx") for p in camera_pose]
             )
 
-            # For habitat - pull x angle
-            # tilt = angles[:, -1]
-            # For real robot
-            tilt = angles[:, 1]
-            # angles gives roll, pitch, yaw
-            yaw = angles[:, -1]
-
-            # Get the agent pose
-            # hab_agent_height = camera_pose[:, 1, 3] * 100
-            agent_pos = camera_pose[:, :3, 3] * 100
-            agent_height = agent_pos[:, 2]
+            yaw = angles[:, 1]
+            tilt = torch.zeros(batch_size)
+            camera_height = self.camera_height
 
             if debug:
                 print("tilt", tilt)
-                print("agent_height", agent_height)
+                print("yaw", yaw)
+                print("camera_height", camera_height)
                 print()
         else:
-            yaw = 0
+            yaw = torch.tensor(batch_size)
             tilt = torch.zeros(batch_size)
-            agent_height = self.agent_height
+            camera_height = self.camera_height
 
-        yaw = torch.tensor(yaw)
         depth = obs[:, 3, :, :].float()
         depth[depth > self.max_depth] = 0
 
@@ -500,7 +490,7 @@ class Categorical2DSemanticMapModule(nn.Module):
         )
 
         point_cloud_base_coords = du.transform_camera_view_t(
-            point_cloud_t, agent_height, torch.rad2deg(tilt).cpu().numpy(), device
+            point_cloud_t, camera_height, torch.rad2deg(tilt).cpu().numpy(), device
         )
 
         point_cloud_map_coords = du.transform_pose_t(

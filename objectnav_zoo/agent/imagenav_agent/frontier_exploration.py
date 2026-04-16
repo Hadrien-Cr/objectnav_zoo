@@ -23,7 +23,7 @@ class FrontierExplorationPolicy(nn.Module):
         super().__init__()
 
         self.dilate_explored_kernel = nn.Parameter(
-            torch.from_numpy(skimage.morphology.disk(15))
+            torch.from_numpy(skimage.morphology.disk(10))
             .unsqueeze(0)
             .unsqueeze(0)
             .float(),
